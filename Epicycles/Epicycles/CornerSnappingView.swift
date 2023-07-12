@@ -26,7 +26,7 @@ struct CornerSnappingView<ContentView: View, SnappingView: View>: View {
             ZStack(alignment: alignment) {
                 contentView
                 snappingView
-                    .padding()
+                    .padding(5)
                     .offset(dragAmount)
                     .animation(.spring(response: 0.4, dampingFraction: 0.9, blendDuration: 0), value: dragAmount)
                     .currentFrameReader(currentFrame: $snappingViewFrame, coordinateSpace: coordinateSpace)

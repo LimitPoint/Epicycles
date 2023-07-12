@@ -44,6 +44,9 @@
 		CD4E3E3A2A35DEC2009EE048 /* CreateEpicirclesPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4E3E392A35DEC2009EE048 /* CreateEpicirclesPath.swift */; };
 		CD4E3E3C2A35DED4009EE048 /* ScalePointsIntoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4E3E3B2A35DED3009EE048 /* ScalePointsIntoView.swift */; };
 		CD4E3E3E2A35DEDF009EE048 /* Curves.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4E3E3D2A35DEDF009EE048 /* Curves.swift */; };
+		CD5C96D62A5E47320077D154 /* ColorCoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5C96D52A5E47320077D154 /* ColorCoding.swift */; };
+		CD5C96D72A5E479C0077D154 /* ColorCoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5C96D52A5E47320077D154 /* ColorCoding.swift */; };
+		CD5C96D82A5E479C0077D154 /* ColorCoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5C96D52A5E47320077D154 /* ColorCoding.swift */; };
 		CD5DD24E2A3695EE00374492 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = CD5DD24D2A3695EE00374492 /* Credits.rtf */; };
 		CD5DD2502A3696D800374492 /* Draw.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5DD24F2A3696D800374492 /* Draw.swift */; };
 		CD5DD28C2A3BDF6700374492 /* ProgressOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5DD28B2A3BDF6700374492 /* ProgressOverlayView.swift */; };
@@ -56,6 +59,7 @@
 		CD9BA01C2A54E59C005DA861 /* AngleCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9BA01A2A54E500005DA861 /* AngleCircleView.swift */; };
 		CD9BA01D2A54E59D005DA861 /* AngleCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9BA01A2A54E500005DA861 /* AngleCircleView.swift */; };
 		CDBD5E3F2A4270F300EA43EC /* FourierSeriesTermsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDBD5E3E2A4270F300EA43EC /* FourierSeriesTermsView.swift */; };
+		CDD04A5F2A5DBC0300AF0025 /* OptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD04A5E2A5DBC0300AF0025 /* OptionsView.swift */; };
 		CDD37B782A49E59400E6D2B0 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD37B772A49E59400E6D2B0 /* WebView.swift */; };
 		CDD561BC2A35394900BFD067 /* EpicyclesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD561BB2A35394900BFD067 /* EpicyclesApp.swift */; };
 		CDD561BE2A35394900BFD067 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD561BD2A35394900BFD067 /* ContentView.swift */; };
@@ -116,6 +120,7 @@
 		CD4E3E392A35DEC2009EE048 /* CreateEpicirclesPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateEpicirclesPath.swift; sourceTree = "<group>"; };
 		CD4E3E3B2A35DED3009EE048 /* ScalePointsIntoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScalePointsIntoView.swift; sourceTree = "<group>"; };
 		CD4E3E3D2A35DEDF009EE048 /* Curves.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Curves.swift; sourceTree = "<group>"; };
+		CD5C96D52A5E47320077D154 /* ColorCoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorCoding.swift; sourceTree = "<group>"; };
 		CD5DD24D2A3695EE00374492 /* Credits.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		CD5DD24F2A3696D800374492 /* Draw.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Draw.swift; sourceTree = "<group>"; };
 		CD5DD28B2A3BDF6700374492 /* ProgressOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressOverlayView.swift; sourceTree = "<group>"; };
@@ -126,6 +131,7 @@
 		CD937E812A366753007B5969 /* Dial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dial.swift; sourceTree = "<group>"; };
 		CD9BA01A2A54E500005DA861 /* AngleCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AngleCircleView.swift; sourceTree = "<group>"; };
 		CDBD5E3E2A4270F300EA43EC /* FourierSeriesTermsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FourierSeriesTermsView.swift; sourceTree = "<group>"; };
+		CDD04A5E2A5DBC0300AF0025 /* OptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsView.swift; sourceTree = "<group>"; };
 		CDD37B772A49E59400E6D2B0 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		CDD561B82A35394900BFD067 /* Epicycles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Epicycles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDD561BB2A35394900BFD067 /* EpicyclesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpicyclesApp.swift; sourceTree = "<group>"; };
@@ -240,6 +246,8 @@
 				CDD37B772A49E59400E6D2B0 /* WebView.swift */,
 				CD2802BC2A4BBFB800B333AA /* SplashScreenView.swift */,
 				CD9BA01A2A54E500005DA861 /* AngleCircleView.swift */,
+				CDD04A5E2A5DBC0300AF0025 /* OptionsView.swift */,
+				CD5C96D52A5E47320077D154 /* ColorCoding.swift */,
 				CD2802C22A4BCA9A00B333AA /* Animation.gif */,
 				CDD561BF2A35394A00BFD067 /* Assets.xcassets */,
 				CDD561C12A35394A00BFD067 /* Epicycles.entitlements */,
@@ -393,6 +401,7 @@
 				CD4C14D42A46526900AB91FD /* EpicyclesDocument.swift in Sources */,
 				CD9BA01C2A54E59C005DA861 /* AngleCircleView.swift in Sources */,
 				CD4C14D22A4651EE00AB91FD /* Constants.swift in Sources */,
+				CD5C96D72A5E479C0077D154 /* ColorCoding.swift in Sources */,
 				CD4C14D52A4652F600AB91FD /* Draw.swift in Sources */,
 				CD4C14D82A46534E00AB91FD /* FourierSeries.swift in Sources */,
 				CD4C14C52A464FDC00AB91FD /* ThumbnailProvider.swift in Sources */,
@@ -413,6 +422,7 @@
 				CD4C14F62A46619E00AB91FD /* Math.swift in Sources */,
 				CD9BA01D2A54E59D005DA861 /* AngleCircleView.swift in Sources */,
 				CD4C14EF2A46617A00AB91FD /* FourierSeries.swift in Sources */,
+				CD5C96D82A5E479C0077D154 /* ColorCoding.swift in Sources */,
 				CD4C14ED2A46616D00AB91FD /* Constants.swift in Sources */,
 				CD4C14EC2A46614D00AB91FD /* ThumbnailProvider.swift in Sources */,
 				CD4C14F42A46619700AB91FD /* Curves.swift in Sources */,
@@ -443,6 +453,7 @@
 				CD4E3E382A35DEB1009EE048 /* FourierSeries.swift in Sources */,
 				CD4E3E3A2A35DEC2009EE048 /* CreateEpicirclesPath.swift in Sources */,
 				CD937E822A366753007B5969 /* Dial.swift in Sources */,
+				CD5C96D62A5E47320077D154 /* ColorCoding.swift in Sources */,
 				CD79A3892A3D582B00EFA55D /* Extensions.swift in Sources */,
 				CD4E3E3E2A35DEDF009EE048 /* Curves.swift in Sources */,
 				CDD561CB2A35398000BFD067 /* DrawAnimatePathView.swift in Sources */,
@@ -450,6 +461,7 @@
 				CDD561CF2A3563AF00BFD067 /* Math.swift in Sources */,
 				CD4E3E3C2A35DED4009EE048 /* ScalePointsIntoView.swift in Sources */,
 				CDBD5E3F2A4270F300EA43EC /* FourierSeriesTermsView.swift in Sources */,
+				CDD04A5F2A5DBC0300AF0025 /* OptionsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -478,7 +490,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ThumbnailExtension/ThumbnailExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -491,7 +503,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles.ThumbnailExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -506,7 +518,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ThumbnailExtension/ThumbnailExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -519,7 +531,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles.ThumbnailExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -533,7 +545,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ThumbnailExtension-iOS/Info.plist";
@@ -545,7 +557,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles.ThumbnailExtension-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -560,7 +572,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ThumbnailExtension-iOS/Info.plist";
@@ -572,7 +584,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles.ThumbnailExtension-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -701,7 +713,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Epicycles/Epicycles.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Epicycles/Preview Content\"";
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -727,7 +739,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -746,7 +758,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Epicycles/Epicycles.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Epicycles/Preview Content\"";
 				DEVELOPMENT_TEAM = GZABHNF58X;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -772,7 +784,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.limit-point.Epicycles";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

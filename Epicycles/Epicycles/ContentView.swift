@@ -31,7 +31,7 @@ struct ContentView: View {
     @State var currentPathViewSize = CGSize.zero
     
     // Custom Fourier Series - draw or specify terms with editor
-    @State var userPointsTab:UserPointsType = .draw
+    @State var userPointsTab:UserPointsType = .terms
     // draw view
     @StateObject var drawAnimatePathViewObservable = DrawAnimatePathViewObservable(pathsPadding: kPathsPadding)
     // amplitude, phase and frequency
@@ -77,6 +77,12 @@ struct ContentView: View {
     @StateObject var webViewObservable = WebViewObservableObject(urlString: kEpicyclesURL)
     
     @Binding var showSplashScreen:Bool
+    
+    // options
+    @State var showOptionsView = false
+    @State var resetOptions = false
+    @Binding var lineWidth:[Double]
+    @Binding var lineColor:[Color]
     
     func userPoints() -> [CGPoint] {
         switch userPointsTab {
@@ -227,8 +233,14 @@ struct ContentView: View {
                     
                     let boundingRectAllPaths = BoundingRectAllPaths(epicycleTime: epicycleTime, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve, userPoints: userPoints())
                     
-                    if let boundingRectAllPaths = boundingRectAllPaths {
-                        self.exportURL = GenerateFrameForTime(epicycleTime: epicycleTime, sampleCount: scaledSampleCount, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve, userPoints: userPoints(), terms: (userPointsTab == .terms ? terms : nil), showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: boundingRectAllPaths)
+                    if var boundingRectAllPaths = boundingRectAllPaths {
+                        let maxLineWidth = scaledLinewidth.max()!/2.0
+                        boundingRectAllPaths = boundingRectAllPaths.insetBy(dx: -maxLineWidth, dy: -maxLineWidth) // adjust for max linwidth/2 
+                        
+                            // if drawingTerms, draw circles with term colors
+                        let drawingTerms = (whichCurve == curves[curves.count-1] && userPointsTab == .terms)
+                        
+                        self.exportURL = GenerateFrameForTime(epicycleTime: epicycleTime, sampleCount: scaledSampleCount, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: boundingRectAllPaths)
                         
                         if let outputURL = self.exportURL {
                             print(outputURL)
@@ -259,7 +271,10 @@ struct ContentView: View {
                     let imageCount = selectedGIFFrameRate.rawValue * selectedGIFDuration.rawValue
                     let duration = CGFloat(selectedGIFDuration.rawValue)
                     
-                    self.gifGenerator = ImagePathsToAnimatedGIF(curve: whichCurve, userPoints: userPoints(), terms: (userPointsTab == .terms ? terms : nil), sampleCount: scaledSampleCount, nbrFourierSeriesTerms: nbrFourierSeriesTerms, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), imageCount: imageCount, duration: duration, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator) { title, percent, image in
+                        // if drawingTerms, draw circles with term colors
+                    let drawingTerms = (whichCurve == curves[curves.count-1] && userPointsTab == .terms)
+                    
+                    self.gifGenerator = ImagePathsToAnimatedGIF(curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), sampleCount: scaledSampleCount, nbrFourierSeriesTerms: nbrFourierSeriesTerms, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), imageCount: imageCount, duration: duration, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator) { title, percent, image in
                         DispatchQueue.main.async {
                             self.animatedGIFProgressTitle = title
                             self.animatedGIFProgressSubTitle = "\(Int(size.width)) x \(Int(size.height))"
@@ -469,8 +484,11 @@ struct ContentView: View {
                 
                 if showCircles {
                     
+                        // if drawingTerms, draw circles with term colors
+                    let drawingTerms = (whichCurve == curves[curves.count-1] && userPointsTab == .terms)
+                    
                     // For Term view draw circles with term color
-                    if whichCurve == curves[curves.count-1], userPointsTab == .terms {
+                    if drawingTerms {
                         // draw the circle for each term by mapping frequencyComponents to epicyclesCirclesPaths
                         // Note: epicyclesCirclesPaths.count = nbrFourierSeriesTerms
                         if terms.count > 0 {
@@ -510,6 +528,9 @@ struct ContentView: View {
                 updatePaths(size: currentPathViewSize, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve)
             }
             .onChange(of: terms) { _ in
+                if whichCurve != curves[curves.count-1] {
+                    whichCurve = curves[curves.count-1]
+                }
                 setSuggestedNumberFourierSeriesTerms()
                 updatePaths(size: currentPathViewSize, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve)
                 let _ = encodeTermsToDocuments(terms: terms)
@@ -628,6 +649,12 @@ struct ContentView: View {
                     .font(.system(size: 18))
             }
             
+            Button(action: {
+                showOptionsView = true
+            }) {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 18))
+            }
         }
         .padding(4)
         .buttonStyle(PlainButtonStyle())
@@ -684,6 +711,29 @@ struct ContentView: View {
                 gifGenerator?.cancel()
             }
         }
+        .onChange(of: lineColor) { newLineColor in
+            saveColorsToUserDefaults(colors: newLineColor, forKey: kColorKey)
+        }
+        .onChange(of: lineWidth) { newLineWidth in
+            UserDefaults.standard.set(newLineWidth, forKey: kWidthKey)
+        }
+        .onChange(of: resetOptions) { newResetOptions in
+            if newResetOptions {
+                lineWidth = kLineWidth
+                lineColor = kLineColor
+                saveColorsToUserDefaults(colors: nil, forKey: kColorKey)
+                UserDefaults.standard.removeObject(forKey: kWidthKey)
+                resetOptions = false
+            }
+        }
+        .overlay(Group {
+            if showOptionsView {          
+                OptionsView(lineWidth: $lineWidth, lineColor: $lineColor, resetOptions: $resetOptions, doneAction: {
+                    showOptionsView = false
+                })
+                .padding()
+            }
+        })
         
     }
     
@@ -715,13 +765,13 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(showSplashScreen: .constant(false))
+        ContentView(showSplashScreen: .constant(false), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor))
     }
 }
 
 struct ContentView2_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(showSplashScreen: .constant(false))
+        ContentView(showSplashScreen: .constant(true), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor))
     }
 }
 

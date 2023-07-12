@@ -21,7 +21,10 @@ let kSampleCount = 1000
 let tangerine = Color(red: 0.98, green: 0.57, blue: 0.21, opacity:0.9)
 let bluePinkColor = Color(red: 230/255, green: 160/255, blue: 200/255)
 
-let lineColor = [Color.orange, Color.black, Color.red, Color.blue, Color.green]
-let lineWidth = [3.0, 1.0, 1.0, 1.0, 1.0]
+var kLineColor = [Color.orange, Color.black, Color.red, Color.blue, Color.green]
+var kLineWidth = [3.0, 1.0, 1.0, 1.0, 1.0]
+let kColorKey = "lineColor"
+let kWidthKey = "lineWidth"
+
 
 let kPathsPadding = 10.0

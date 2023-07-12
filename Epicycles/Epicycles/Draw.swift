@@ -471,7 +471,7 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
         pathLineColor.append(lineColor[2])
     }
     
-    if showCircles {
+    if showCircles, terms == nil { // don't draw these if drawing circles for terms (below), creates a 'dot' artifact at center
         pathToDraw.append(epicyclesCirclesPath)
         pathLineWidth.append(scaleFactor * lineWidth[3])
         pathLineColor.append(lineColor[3])
@@ -513,7 +513,9 @@ func ImagePathsToAnimatedGIF(curve:Curve, userPoints: [CGPoint]?, terms: [Term]?
         gifGenerator.estimateBoundingRect(timeIntervals: imageCount, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints) { _, percent in
             progress("Preparing…", percent, nil)
         } completion: { estimatedBoundingRect in
-            if let estimatedBoundingRect = estimatedBoundingRect {
+            if var estimatedBoundingRect = estimatedBoundingRect {
+                let maxLineWidth = lineWidth.max()!/2.0
+                estimatedBoundingRect = estimatedBoundingRect.insetBy(dx: -maxLineWidth, dy: -maxLineWidth) // adjust for max linwidth/2 
                 gifGenerator.animatedGif(imageCount: imageCount, duration: duration) { i in
                     if let imageFrameURL = GenerateFrameForTime(epicycleTime: (Double(i-1) * (2.0 * .pi) / Double(imageCount)), sampleCount: sampleCount, size: size, scaleFactor: scaleFactor, lineWidth:lineWidth, lineColor:lineColor, backgroundColor: backgroundColor, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints, terms: terms, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: estimatedBoundingRect), let ciimage = CIImage(contentsOf: imageFrameURL) {
                         return ciimage.cgimage()
