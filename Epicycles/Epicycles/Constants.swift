@@ -21,9 +21,6 @@ let kSampleCount = 1000
 let tangerine = Color(red: 0.98, green: 0.57, blue: 0.21, opacity:0.9)
 let bluePinkColor = Color(red: 230/255, green: 160/255, blue: 200/255)
 
-let kLineCap = CGLineCap.butt // butt, round, square
-let kLineJoin = CGLineJoin.miter // bevel, miter, round
-
 // Indices:
 // 0-curvePath, 1-curveFourierSeriesPath, 2-epicyclesPath, 3-epicyclesCirclesPath, 4-epicyclesPathTerminator
 var kLineColor = [Color.orange, Color.black, Color.red, Color.blue, Color.green]

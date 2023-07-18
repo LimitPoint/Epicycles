@@ -12,6 +12,19 @@ enum UserPointsType: String, CaseIterable {
     case terms = "Terms"
 }
 
+struct ContentViewAlertInfo: Identifiable {
+    
+    enum AlertType {
+        case cantOpenFile
+        case tooFewPoints
+        case exported
+    }
+    
+    let id: AlertType
+    let title: String
+    let message: String
+}
+
 struct ContentView: View {
     
     @State var curvePath:Path = Path()
@@ -39,12 +52,12 @@ struct ContentView: View {
     // amplitude, phase and frequency
     @State var terms:[Term] = (decodeTermsFromDocuments() ?? kDefaultTerms)
     
-    @State var hasShownTooFewPointsAlert = false
-    @State var showAlertTooFewPoints = false
-    
     // for onOpenURL
     @State var showURLLoadingProgress = false
-    @State var showAlertCantOpenFile = false
+    
+    // Alerts
+    @State var hasShownTooFewPointsAlert = false
+    @State var contentViewAlertInfo: ContentViewAlertInfo?
     
     @State var epicycleTime: Double = 0
     
@@ -66,7 +79,6 @@ struct ContentView: View {
     @State var selectedGIFFrameRate = kDefaultGIFFrameRate
     @State var whiteBackground = true
     @State var exportURL:URL? = nil
-    @State var showExportedAlert = false
     @State var showAnimatedGIFProgress = false
     @State var animatedGIFProgressTitle:String = ""
     @State var animatedGIFProgressSubTitle:String?
@@ -154,7 +166,9 @@ struct ContentView: View {
                 
         // show alert for 'too few points'
         if hasShownTooFewPointsAlert == false, curve == curves[curves.count-1], hasTooFewPoints() {
-            showAlertTooFewPoints = true
+            
+            contentViewAlertInfo = ContentViewAlertInfo(id: .tooFewPoints, title: "Draw or Add Terms", message: "Draw points to define a curve.\n\nOr use the Terms editor for configuring frequency components of a Fourier series that defines the curve.\n\nThe selected number of terms N for the computed series is set to the Nyquist frequency that assumes a uniform sampling rate, based on the number of points drawn, or the highest frequency of the custom Fourier series.\n\nVary N for best results.")
+            
             hasShownTooFewPointsAlert = true
         }
         
@@ -228,6 +242,24 @@ struct ContentView: View {
         self.gifGenerator = nil
         self.exportURL = nil
         
+        func exportedAlertMessage() -> String {
+            var message:String
+            
+            if let gifGenerator = gifGenerator, gifGenerator.isCancelled {
+                message = "Cancelled!"
+            }
+            else {
+                if let _ = self.exportURL {
+                    message = "Success!"
+                }
+                else {
+                    message = "There was a problem saving. Try a smaller size or duration."
+                }
+            }
+            
+            return message
+        }
+        
         DispatchQueue.global().async { 
             
             switch selectedMediaType {
@@ -251,12 +283,12 @@ struct ContentView: View {
                         }
                         
                         DispatchQueue.main.async {
-                            self.showExportedAlert = true
+                            contentViewAlertInfo = ContentViewAlertInfo(id: .exported, title: "Save to Photos", message: exportedAlertMessage())
                         }
                     }
                     else {
                         DispatchQueue.main.async {
-                            self.showExportedAlert = true
+                            contentViewAlertInfo = ContentViewAlertInfo(id: .exported, title: "Save to Photos", message: exportedAlertMessage())
                         }
                     }
                 case .gif:
@@ -295,7 +327,7 @@ struct ContentView: View {
                         
                         DispatchQueue.main.async {
                             self.showAnimatedGIFProgress = false
-                            self.showExportedAlert = true
+                            contentViewAlertInfo = ContentViewAlertInfo(id: .exported, title: "Save to Photos", message: exportedAlertMessage())
                         }
                     }
             }
@@ -421,7 +453,7 @@ struct ContentView: View {
                     terms = decodedTerms
                 }
                 else {
-                    showAlertCantOpenFile = true
+                    contentViewAlertInfo = ContentViewAlertInfo(id: .cantOpenFile, title: "Can't Open File", message: "The URL can not be opened.")
                 }
             }
         }
@@ -432,36 +464,22 @@ struct ContentView: View {
                     .background(RoundedRectangle(cornerRadius: 16).fill(tangerine))
             }
         })
-        .alert(isPresented: $showAlertCantOpenFile) {
-            Alert(
-                title: Text("Can't Open File"),
-                message: nil,
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .alert(isPresented: $showAlertTooFewPoints) {
-            Alert(
-                title: Text("Draw or Add Terms"),
-                message: Text("Draw points to define a curve.\n\nOr use the Terms editor for configuring frequency components of a Fourier series that defines the curve.\n\nThe selected number of terms N for the computed series is set to the Nyquist frequency that assumes a uniform sampling rate, based on the number of points drawn, or the highest frequency of the custom Fourier series.\n\nVary N for best results."),
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .alert("Save to Photos", isPresented: $showExportedAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            
-            if let gifGenerator = gifGenerator, gifGenerator.isCancelled {
-                Text("Cancelled!")
+        .alert(item: $contentViewAlertInfo, content: { contentViewAlertInfo in
+            switch contentViewAlertInfo.id {
+                case .cantOpenFile:
+                    return Alert(title: Text(contentViewAlertInfo.title),
+                                 message: Text(contentViewAlertInfo.message),
+                                 dismissButton: .default(Text("OK")))
+                case .tooFewPoints:
+                    return Alert(title: Text(contentViewAlertInfo.title),
+                                 message: Text(contentViewAlertInfo.message),
+                                 dismissButton: .default(Text("OK")))
+                case .exported:
+                    return Alert(title: Text(contentViewAlertInfo.title),
+                                 message: Text(contentViewAlertInfo.message),
+                                 dismissButton: .default(Text("OK")))
             }
-            else {
-                if let _ = self.exportURL {
-                    Text("Success!")
-                }
-                else {
-                    Text("Not saved due to a problem. Try a smaller size or duration.")
-                }
-            }
-        }
+        })
     }
     
     var pathsView: some View {
@@ -472,7 +490,7 @@ struct ContentView: View {
                 
                 if showFunction {
                     curvePath
-                        .stroke(lineColor[0], style: StrokeStyle(lineWidth: lineWidth[0], lineCap: kLineCap, lineJoin: kLineJoin))
+                        .stroke(lineColor[0], style: StrokeStyle(lineWidth: lineWidth[0], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                 }
                 
                 if showFourierSeries {
@@ -482,18 +500,18 @@ struct ContentView: View {
                                 path.move(to: fourierSeriesPoints[j])
                                 path.addLine(to: fourierSeriesPoints[j+1])
                             }
-                            .stroke(lineColor[1].opacity(trailAlpha(j, epicycleTime: epicycleTime, pathPointCount: fourierSeriesPoints.count, trailLength: trailLength)), style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: kLineCap, lineJoin: kLineJoin))
+                            .stroke(lineColor[1].opacity(trailAlpha(j, epicycleTime: epicycleTime, pathPointCount: fourierSeriesPoints.count, trailLength: trailLength)), style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: CGLineCap.butt, lineJoin: CGLineJoin.miter))
                         }
                     }
                     else {
                         curveFourierSeriesPath
-                            .stroke(lineColor[1], style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: kLineCap, lineJoin: kLineJoin))
+                            .stroke(lineColor[1], style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                     }
                 }
                 
                 if showRadii {
                     epicyclesPath
-                        .stroke(lineColor[2], style: StrokeStyle(lineWidth:  lineWidth[2], lineCap: kLineCap, lineJoin: kLineJoin))
+                        .stroke(lineColor[2], style: StrokeStyle(lineWidth:  lineWidth[2], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                 }
                 
                 if showCircles {
@@ -509,21 +527,21 @@ struct ContentView: View {
                             ForEach(0 ..< terms.count, id: \.self) { j in
                                 if let k = fourierSeriesIndexForTerm(term: terms[j], nbrFourierSeriesTerms: epicyclesCirclesPaths.count) {
                                     epicyclesCirclesPaths[k]
-                                        .stroke(terms[j].color, style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: kLineCap, lineJoin: kLineJoin))
+                                        .stroke(terms[j].color, style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                                 }
                             }
                         }
                     }
                     else {
                         epicyclesCirclesPath
-                            .stroke(lineColor[3], style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: kLineCap, lineJoin: kLineJoin))
+                            .stroke(lineColor[3], style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                     }
 
                 }
                 
                 if showTerminator {
                     epicyclesPathTerminator
-                        .stroke(lineColor[4], style: StrokeStyle(lineWidth:  lineWidth[4], lineCap: kLineCap, lineJoin: kLineJoin))
+                        .stroke(lineColor[4], style: StrokeStyle(lineWidth:  lineWidth[4], lineCap: CGLineCap.round, lineJoin: CGLineJoin.round))
                 }
                 
             }

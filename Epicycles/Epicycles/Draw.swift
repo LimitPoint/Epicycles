@@ -26,9 +26,9 @@ func scaleCGPaths(_ paths: [CGPath], scaleX: CGFloat, scaleY: CGFloat) -> [CGPat
     return scaledPaths
 }
 
-func DrawPathsInContext(context:CGContext, paths:[Path], width:Int, height:Int, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, pathScaleFactor:Double, flipCGContext:Bool = true) {
+func DrawPathsInContext(context:CGContext, paths:[Path], width:Int, height:Int, lineWidth:[Double], lineColor:[Color], lineCap:[CGLineCap], lineJoin:[CGLineJoin], backgroundColor: Color?, pathScaleFactor:Double, flipCGContext:Bool = true) {
     
-    guard paths.count > 0, paths.count == lineWidth.count, paths.count == lineColor.count else {
+    guard paths.count > 0, paths.count == lineWidth.count, paths.count == lineColor.count, paths.count == lineCap.count, paths.count == lineJoin.count  else {
         return
     }
     
@@ -52,9 +52,6 @@ func DrawPathsInContext(context:CGContext, paths:[Path], width:Int, height:Int, 
         context.fillPath()
     }
     
-    context.setLineCap(kLineCap)
-    context.setLineJoin(kLineJoin)
-    
     let pathsToScale = paths.map { path in
         path.cgPath
     }
@@ -65,6 +62,8 @@ func DrawPathsInContext(context:CGContext, paths:[Path], width:Int, height:Int, 
         let scaledPath = scaledPaths[i]
         
         context.setLineWidth(lineWidth[i])
+        context.setLineCap(lineCap[i])
+        context.setLineJoin(lineJoin[i])
         
 #if os(macOS)
         context.setStrokeColor(NSColor(lineColor[i]).cgColor)
@@ -97,7 +96,7 @@ extension NSImage {
     }
 }
 
-func CreateNSImageForPaths(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, pathScaleFactor:Double) -> NSImage? {
+func CreateNSImageForPaths(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], lineCap:[CGLineCap], lineJoin:[CGLineJoin], backgroundColor: Color?, pathScaleFactor:Double) -> NSImage? {
     
     if  ((width == 0) || (height == 0)) {
         return nil
@@ -127,7 +126,7 @@ func CreateNSImageForPaths(paths:[Path], width: Double, height: Double, lineWidt
     
     let context = nsGraphicsContext.cgContext
     
-    DrawPathsInContext(context: context, paths: paths, width: Int(width), height: Int(height), lineWidth:lineWidth, lineColor:lineColor, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor, flipCGContext: true)
+    DrawPathsInContext(context: context, paths: paths, width: Int(width), height: Int(height), lineWidth:lineWidth, lineColor:lineColor, lineCap: lineCap, lineJoin: lineJoin, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor, flipCGContext: true)
     
     NSGraphicsContext.restoreGraphicsState()
     
@@ -151,13 +150,13 @@ extension UIImage {
     }
 }
 
-func CreateUIImageForPaths(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, pathScaleFactor:Double) -> UIImage? {
+func CreateUIImageForPaths(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], lineCap:[CGLineCap], lineJoin:[CGLineJoin], backgroundColor: Color?, pathScaleFactor:Double) -> UIImage? {
     
     UIGraphicsBeginImageContextWithOptions(CGSize(width: width, height: height), false, 1.0)
     
     if let context = UIGraphicsGetCurrentContext() {
         
-        DrawPathsInContext(context: context, paths: paths, width: Int(width), height: Int(height), lineWidth: lineWidth, lineColor: lineColor, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor, flipCGContext: false)
+        DrawPathsInContext(context: context, paths: paths, width: Int(width), height: Int(height), lineWidth: lineWidth, lineColor: lineColor, lineCap: lineCap, lineJoin: lineJoin, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor, flipCGContext: false)
         
         if let img = UIGraphicsGetImageFromCurrentImageContext() {
             UIGraphicsEndImageContext()
@@ -169,7 +168,7 @@ func CreateUIImageForPaths(paths:[Path], width: Double, height: Double, lineWidt
 }
 #endif
 
-func ImagePathsToPNG(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, url: URL, pathScaleFactor:Double) -> URL? {
+func ImagePathsToPNG(paths:[Path], width: Double, height: Double, lineWidth:[Double], lineColor:[Color], lineCap:[CGLineCap], lineJoin:[CGLineJoin], backgroundColor: Color?, url: URL, pathScaleFactor:Double) -> URL? {
     
     var destinationURL = url
     
@@ -181,13 +180,13 @@ func ImagePathsToPNG(paths:[Path], width: Double, height: Double, lineWidth:[Dou
     var outputURL:URL?
     
 #if os(macOS)
-    if let nsimage = CreateNSImageForPaths(paths: paths, width: width, height: height, lineWidth: lineWidth, lineColor: lineColor, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor) {
+    if let nsimage = CreateNSImageForPaths(paths: paths, width: width, height: height, lineWidth: lineWidth, lineColor: lineColor, lineCap: lineCap, lineJoin: lineJoin, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor) {
         if nsimage.pngWrite(to: destinationURL) {
             outputURL = destinationURL
         }
     }
 #else
-    if let uiimage = CreateUIImageForPaths(paths: paths, width: width, height: height, lineWidth: lineWidth, lineColor: lineColor, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor) {
+    if let uiimage = CreateUIImageForPaths(paths: paths, width: width, height: height, lineWidth: lineWidth, lineColor: lineColor, lineCap: lineCap, lineJoin: lineJoin, backgroundColor: backgroundColor, pathScaleFactor: pathScaleFactor) {
         if uiimage.pngWrite(to: destinationURL) {
             outputURL = destinationURL
         }
@@ -463,10 +462,15 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
     var pathLineColor:[Color] = []
     var pathLineWidth:[Double] = []
     
+    var pathLineCap:[CGLineCap] = []
+    var pathLineJoin:[CGLineJoin] = []
+    
     if showFunction {
         pathToDraw.append(curvePath)
         pathLineWidth.append(scaleFactor * lineWidth[0])
         pathLineColor.append(lineColor[0])
+        pathLineCap.append(CGLineCap.round)
+        pathLineJoin.append(CGLineJoin.round)
     }
     
     if showFourierSeries {
@@ -479,12 +483,16 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
                 pathToDraw.append(path)
                 pathLineWidth.append(scaleFactor * lineWidth[1])
                 pathLineColor.append(lineColor[1].opacity(trailAlpha(j, epicycleTime: epicycleTime, pathPointCount: fourierSeriesPoints.count, trailLength: trailLength)))
+                pathLineCap.append(CGLineCap.butt) // the opacity gradient levels cause a dotted appearance with .round for each
+                pathLineJoin.append(CGLineJoin.miter)
             }
         }
         else {
             pathToDraw.append(curveFourierSeriesPath)
             pathLineWidth.append(scaleFactor * lineWidth[1])
             pathLineColor.append(lineColor[1])
+            pathLineCap.append(CGLineCap.round)
+            pathLineJoin.append(CGLineJoin.round)
         }
     }
     
@@ -492,18 +500,24 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
         pathToDraw.append(epicyclesPath)
         pathLineWidth.append(scaleFactor * lineWidth[2])
         pathLineColor.append(lineColor[2])
+        pathLineCap.append(CGLineCap.round)
+        pathLineJoin.append(CGLineJoin.round)
     }
     
     if showCircles, terms == nil { // don't draw these if drawing circles for terms (below), creates a 'dot' artifact at center
         pathToDraw.append(epicyclesCirclesPath)
         pathLineWidth.append(scaleFactor * lineWidth[3])
         pathLineColor.append(lineColor[3])
+        pathLineCap.append(CGLineCap.round)
+        pathLineJoin.append(CGLineJoin.round)
     }
     
     if showTerminator {
         pathToDraw.append(epicyclesPathTerminator)
         pathLineWidth.append(scaleFactor * lineWidth[4])
         pathLineColor.append(lineColor[4])
+        pathLineCap.append(CGLineCap.round)
+        pathLineJoin.append(CGLineJoin.round)
     }
     
     // append the epicyclesCirclesPaths with corresponding terms colors; same lineWidth 
@@ -514,12 +528,14 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
                     pathToDraw.append(epicyclesCirclesPaths[k])
                     pathLineWidth.append(scaleFactor * lineWidth[3])
                     pathLineColor.append(terms[j].color)
+                    pathLineCap.append(CGLineCap.round)
+                    pathLineJoin.append(CGLineJoin.round)
                 }
             }
         }
     }
     
-    if let imageURL = ImagePathsToPNG(paths: pathToDraw, width: imageWidth, height: imageHeight, lineWidth: pathLineWidth, lineColor: pathLineColor, backgroundColor: backgroundColor, url: url, pathScaleFactor: scaleFactor) {
+    if let imageURL = ImagePathsToPNG(paths: pathToDraw, width: imageWidth, height: imageHeight, lineWidth: pathLineWidth, lineColor: pathLineColor, lineCap: pathLineCap, lineJoin: pathLineJoin, backgroundColor: backgroundColor, url: url, pathScaleFactor: scaleFactor) {
         
         return imageURL
     }

@@ -49,9 +49,9 @@ class ThumbnailProvider: QLThumbnailProvider {
             let curvePath = CreatePath(points: userPoints, close: false)
             
             #if os(macOS)
-            DrawPathsInContext(context: context, paths: [curvePath], width: Int(viewSize.width), height: Int(viewSize.height), lineWidth: [1], lineColor: [kLineColor[0]], backgroundColor: nil, pathScaleFactor: 1, flipCGContext: true)
+            DrawPathsInContext(context: context, paths: [curvePath], width: Int(viewSize.width), height: Int(viewSize.height), lineWidth: [1], lineColor: [kLineColor[0]], lineCap: [CGLineCap.round], lineJoin: [CGLineJoin.round], backgroundColor: nil, pathScaleFactor: 1, flipCGContext: true)
             #else
-            DrawPathsInContext(context: context, paths: [curvePath], width: Int(viewSize.width), height: Int(viewSize.height), lineWidth: [1], lineColor: [kLineColor[0]], backgroundColor: nil, pathScaleFactor: 1, flipCGContext: false)
+            DrawPathsInContext(context: context, paths: [curvePath], width: Int(viewSize.width), height: Int(viewSize.height), lineWidth: [1], lineColor: [kLineColor[0]], lineCap: [CGLineCap.round], lineJoin: [CGLineJoin.round], backgroundColor: nil, pathScaleFactor: 1, flipCGContext: false)
             #endif
             
             
