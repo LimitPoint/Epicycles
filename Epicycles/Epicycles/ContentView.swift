@@ -21,6 +21,8 @@ struct ContentView: View {
     @State var epicyclesPathTerminator:Path = Path()
     @State var epicyclesCirclesPaths:[Path] = [] // epicyclesCirclesPaths.count = nbrFourierSeriesTerms, adjustable by user
     
+    @State var fourierSeriesPoints:[CGPoint] = [] // for path trail
+    
     @State var sampleCount = kSampleCount
     
     @State var nbrIntegrationSamples = 2 * kSampleCount
@@ -83,6 +85,7 @@ struct ContentView: View {
     @State var resetOptions = false
     @Binding var lineWidth:[Double]
     @Binding var lineColor:[Color]
+    @Binding var trailLength:Double
     
     func userPoints() -> [CGPoint] {
         switch userPointsTab {
@@ -155,7 +158,7 @@ struct ContentView: View {
             hasShownTooFewPointsAlert = true
         }
         
-        (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths) = CreatePaths(epicycleTime: epicycleTime, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints(), boundingRectAllPaths: nil)
+        (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths, fourierSeriesPoints) = CreatePaths(epicycleTime: epicycleTime, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints(), boundingRectAllPaths: nil)
     }
     
     func startAnimating() {
@@ -240,7 +243,7 @@ struct ContentView: View {
                             // if drawingTerms, draw circles with term colors
                         let drawingTerms = (whichCurve == curves[curves.count-1] && userPointsTab == .terms)
                         
-                        self.exportURL = GenerateFrameForTime(epicycleTime: epicycleTime, sampleCount: scaledSampleCount, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: boundingRectAllPaths)
+                        self.exportURL = GenerateFrameForTime(epicycleTime: epicycleTime, sampleCount: scaledSampleCount, size: size, scaleFactor: scaleFactor, trailLength: trailLength, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: boundingRectAllPaths)
                         
                         if let outputURL = self.exportURL {
                             print(outputURL)
@@ -274,7 +277,7 @@ struct ContentView: View {
                         // if drawingTerms, draw circles with term colors
                     let drawingTerms = (whichCurve == curves[curves.count-1] && userPointsTab == .terms)
                     
-                    self.gifGenerator = ImagePathsToAnimatedGIF(curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), sampleCount: scaledSampleCount, nbrFourierSeriesTerms: nbrFourierSeriesTerms, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), imageCount: imageCount, duration: duration, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator) { title, percent, image in
+                    self.gifGenerator = ImagePathsToAnimatedGIF(curve: whichCurve, userPoints: userPoints(), terms: (drawingTerms ? terms : nil), sampleCount: scaledSampleCount, trailLength: trailLength, nbrFourierSeriesTerms: nbrFourierSeriesTerms, size: size, scaleFactor: scaleFactor, lineWidth: scaledLinewidth, lineColor: lineColor, backgroundColor: (whiteBackground ? .white : .clear), imageCount: imageCount, duration: duration, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator) { title, percent, image in
                         DispatchQueue.main.async {
                             self.animatedGIFProgressTitle = title
                             self.animatedGIFProgressSubTitle = "\(Int(size.width)) x \(Int(size.height))"
@@ -469,17 +472,28 @@ struct ContentView: View {
                 
                 if showFunction {
                     curvePath
-                        .stroke(lineColor[0], style: StrokeStyle(lineWidth: lineWidth[0], lineCap: .round, lineJoin: .round))
+                        .stroke(lineColor[0], style: StrokeStyle(lineWidth: lineWidth[0], lineCap: kLineCap, lineJoin: kLineJoin))
                 }
                 
                 if showFourierSeries {
-                    curveFourierSeriesPath
-                        .stroke(lineColor[1], style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: .round, lineJoin: .round))
+                    if trailLength > 0, fourierSeriesPoints.count > 1 {
+                        ForEach(0 ..< fourierSeriesPoints.count-1, id: \.self) { j in
+                            Path { path in
+                                path.move(to: fourierSeriesPoints[j])
+                                path.addLine(to: fourierSeriesPoints[j+1])
+                            }
+                            .stroke(lineColor[1].opacity(trailAlpha(j, epicycleTime: epicycleTime, pathPointCount: fourierSeriesPoints.count, trailLength: trailLength)), style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: kLineCap, lineJoin: kLineJoin))
+                        }
+                    }
+                    else {
+                        curveFourierSeriesPath
+                            .stroke(lineColor[1], style: StrokeStyle(lineWidth:  lineWidth[1], lineCap: kLineCap, lineJoin: kLineJoin))
+                    }
                 }
                 
                 if showRadii {
                     epicyclesPath
-                        .stroke(lineColor[2], style: StrokeStyle(lineWidth:  lineWidth[2], lineCap: .round, lineJoin: .round))
+                        .stroke(lineColor[2], style: StrokeStyle(lineWidth:  lineWidth[2], lineCap: kLineCap, lineJoin: kLineJoin))
                 }
                 
                 if showCircles {
@@ -495,21 +509,21 @@ struct ContentView: View {
                             ForEach(0 ..< terms.count, id: \.self) { j in
                                 if let k = fourierSeriesIndexForTerm(term: terms[j], nbrFourierSeriesTerms: epicyclesCirclesPaths.count) {
                                     epicyclesCirclesPaths[k]
-                                        .stroke(terms[j].color, style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: .round, lineJoin: .round))
+                                        .stroke(terms[j].color, style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: kLineCap, lineJoin: kLineJoin))
                                 }
                             }
                         }
                     }
                     else {
                         epicyclesCirclesPath
-                            .stroke(lineColor[3], style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: .round, lineJoin: .round))
+                            .stroke(lineColor[3], style: StrokeStyle(lineWidth:  lineWidth[3], lineCap: kLineCap, lineJoin: kLineJoin))
                     }
 
                 }
                 
                 if showTerminator {
                     epicyclesPathTerminator
-                        .stroke(lineColor[4], style: StrokeStyle(lineWidth:  lineWidth[4], lineCap: .round, lineJoin: .round))
+                        .stroke(lineColor[4], style: StrokeStyle(lineWidth:  lineWidth[4], lineCap: kLineCap, lineJoin: kLineJoin))
                 }
                 
             }
@@ -717,18 +731,23 @@ struct ContentView: View {
         .onChange(of: lineWidth) { newLineWidth in
             UserDefaults.standard.set(newLineWidth, forKey: kWidthKey)
         }
+        .onChange(of: trailLength) { newTrailLength in
+            UserDefaults.standard.set(newTrailLength, forKey: kTrailLengthKey)
+        }
         .onChange(of: resetOptions) { newResetOptions in
             if newResetOptions {
                 lineWidth = kLineWidth
                 lineColor = kLineColor
+                trailLength = kTrailLength
                 saveColorsToUserDefaults(colors: nil, forKey: kColorKey)
                 UserDefaults.standard.removeObject(forKey: kWidthKey)
+                UserDefaults.standard.removeObject(forKey: kTrailLengthKey)
                 resetOptions = false
             }
         }
         .overlay(Group {
             if showOptionsView {          
-                OptionsView(lineWidth: $lineWidth, lineColor: $lineColor, resetOptions: $resetOptions, doneAction: {
+                OptionsView(lineWidth: $lineWidth, lineColor: $lineColor, trailLength: $trailLength, resetOptions: $resetOptions, doneAction: {
                     showOptionsView = false
                 })
                 .padding()
@@ -765,13 +784,13 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(showSplashScreen: .constant(false), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor))
+        ContentView(showSplashScreen: .constant(false), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor), trailLength: .constant(kTrailLength))
     }
 }
 
 struct ContentView2_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(showSplashScreen: .constant(true), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor))
+        ContentView(showSplashScreen: .constant(true), lineWidth: .constant(kLineWidth), lineColor: .constant(kLineColor), trailLength: .constant(kTrailLength))
     }
 }
 

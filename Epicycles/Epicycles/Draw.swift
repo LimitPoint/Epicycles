@@ -52,8 +52,8 @@ func DrawPathsInContext(context:CGContext, paths:[Path], width:Int, height:Int, 
         context.fillPath()
     }
     
-    context.setLineCap(.round)
-    context.setLineJoin(.round)
+    context.setLineCap(kLineCap)
+    context.setLineJoin(kLineJoin)
     
     let pathsToScale = paths.map { path in
         path.cgPath
@@ -359,7 +359,7 @@ func BoundingRectAllPaths(epicycleTime:Double, sampleCount:Int, size:CGSize, nbr
     return BoundingRect(rectangles: [paths.0.boundingRect, paths.1.boundingRect, paths.2.boundingRect, paths.3.boundingRect, paths.4.boundingRect])
 }
 
-func CreatePaths(epicycleTime:Double, sampleCount:Int, size:CGSize, nbrFourierSeriesTerms:Int, curve:Curve, userPoints: [CGPoint]?, boundingRectAllPaths: CGRect?) -> (Path,Path,Path,Path,Path,[Path]) {
+func CreatePaths(epicycleTime:Double, sampleCount:Int, size:CGSize, nbrFourierSeriesTerms:Int, curve:Curve, userPoints: [CGPoint]?, boundingRectAllPaths: CGRect?) -> (Path,Path,Path,Path,Path,[Path], [CGPoint]) {
     
     var points_curve:[CGPoint] = []
     var points_fs:[CGPoint]
@@ -420,7 +420,16 @@ func CreatePaths(epicycleTime:Double, sampleCount:Int, size:CGSize, nbrFourierSe
     let (epicyclesCirclesPath, epicyclesCirclesPaths) = CreateEpicirclesPath(points: points[2])
     let epicyclesPathTerminator = CreateTerminatingCirclePath(points: points[2], circleRadius: 3)
     
-    return (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths)
+    return (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths, points[1])
+}
+
+/*
+ Computes alpha for color values along the Fourier series path to create a path trail. The path trail starts fully opaque (alpha = 1) at the current epicycleTime, and fades to full transparency (alpha = 0) at the end. The rate of fading is a power, trailLength. 
+ */
+func trailAlpha(_ j:Int, epicycleTime:Double, pathPointCount:Int, trailLength:Double) -> Double {
+    // Add .pi since epicycleTime is in [-.pi, pi]
+    let g = ((epicycleTime + .pi) / (2 * .pi)) + ( 1.0 - Double(j)/Double(pathPointCount-1) )
+    return pow(1 - g.truncatingRemainder(dividingBy: 1), trailLength)
 }
 
 /*
@@ -432,7 +441,8 @@ func CreatePaths(epicycleTime:Double, sampleCount:Int, size:CGSize, nbrFourierSe
  • terms are used to color the epicycle circles, and should only be non-nil if the current path is the custom Fourier series path (Terms view)
 
  */
-func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, scaleFactor:Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, nbrFourierSeriesTerms:Int, curve:Curve, userPoints: [CGPoint]?, terms:[Term]?, showFunction:Bool, showFourierSeries:Bool, showRadii:Bool, showCircles:Bool, showTerminator:Bool, boundingRectAllPaths: CGRect?) -> URL? {
+
+func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, scaleFactor:Double, trailLength:Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, nbrFourierSeriesTerms:Int, curve:Curve, userPoints: [CGPoint]?, terms:[Term]?, showFunction:Bool, showFourierSeries:Bool, showRadii:Bool, showCircles:Bool, showTerminator:Bool, boundingRectAllPaths: CGRect?) -> URL? {
     
     guard lineWidth.count == 5, lineColor.count == 5 else {
         print("lineWidth or lineColor count must be 5")
@@ -444,7 +454,7 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
         return nil
     }
     
-    let (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths) = CreatePaths(epicycleTime: epicycleTime, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints, boundingRectAllPaths: boundingRectAllPaths)
+    let (curvePath, curveFourierSeriesPath, epicyclesPath, epicyclesCirclesPath, epicyclesPathTerminator, epicyclesCirclesPaths, fourierSeriesPoints) = CreatePaths(epicycleTime: epicycleTime, sampleCount: sampleCount, size: size, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints, boundingRectAllPaths: boundingRectAllPaths)
     
     let imageWidth = scaleFactor * size.width
     let imageHeight = scaleFactor * size.height
@@ -460,9 +470,22 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
     }
     
     if showFourierSeries {
-        pathToDraw.append(curveFourierSeriesPath)
-        pathLineWidth.append(scaleFactor * lineWidth[1])
-        pathLineColor.append(lineColor[1])
+        if trailLength > 0, fourierSeriesPoints.count > 1 {
+            for j in 0...fourierSeriesPoints.count-2 {
+                let path = Path { path in
+                    path.move(to: fourierSeriesPoints[j])
+                    path.addLine(to: fourierSeriesPoints[j+1])
+                }
+                pathToDraw.append(path)
+                pathLineWidth.append(scaleFactor * lineWidth[1])
+                pathLineColor.append(lineColor[1].opacity(trailAlpha(j, epicycleTime: epicycleTime, pathPointCount: fourierSeriesPoints.count, trailLength: trailLength)))
+            }
+        }
+        else {
+            pathToDraw.append(curveFourierSeriesPath)
+            pathLineWidth.append(scaleFactor * lineWidth[1])
+            pathLineColor.append(lineColor[1])
+        }
     }
     
     if showRadii {
@@ -504,7 +527,7 @@ func GenerateFrameForTime(epicycleTime:Double, sampleCount:Int, size:CGSize, sca
     return nil
 }
 
-func ImagePathsToAnimatedGIF(curve:Curve, userPoints: [CGPoint]?, terms: [Term]?, sampleCount:Int, nbrFourierSeriesTerms:Int, size:CGSize, scaleFactor:Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, imageCount:Int, duration:CGFloat, showFunction:Bool, showFourierSeries:Bool, showRadii:Bool, showCircles:Bool, showTerminator:Bool, progress:@escaping (String, CGFloat, CGImage?)->Void, completion: @escaping (URL?) -> Void) -> GIFGenerator {
+func ImagePathsToAnimatedGIF(curve:Curve, userPoints: [CGPoint]?, terms: [Term]?, sampleCount:Int, trailLength: Double, nbrFourierSeriesTerms:Int, size:CGSize, scaleFactor:Double, lineWidth:[Double], lineColor:[Color], backgroundColor: Color?, imageCount:Int, duration:CGFloat, showFunction:Bool, showFourierSeries:Bool, showRadii:Bool, showCircles:Bool, showTerminator:Bool, progress:@escaping (String, CGFloat, CGImage?)->Void, completion: @escaping (URL?) -> Void) -> GIFGenerator {
     
     let gifGenerator = GIFGenerator()
     
@@ -517,7 +540,7 @@ func ImagePathsToAnimatedGIF(curve:Curve, userPoints: [CGPoint]?, terms: [Term]?
                 let maxLineWidth = lineWidth.max()!/2.0
                 estimatedBoundingRect = estimatedBoundingRect.insetBy(dx: -maxLineWidth, dy: -maxLineWidth) // adjust for max linwidth/2 
                 gifGenerator.animatedGif(imageCount: imageCount, duration: duration) { i in
-                    if let imageFrameURL = GenerateFrameForTime(epicycleTime: (Double(i-1) * (2.0 * .pi) / Double(imageCount)), sampleCount: sampleCount, size: size, scaleFactor: scaleFactor, lineWidth:lineWidth, lineColor:lineColor, backgroundColor: backgroundColor, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints, terms: terms, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: estimatedBoundingRect), let ciimage = CIImage(contentsOf: imageFrameURL) {
+                    if let imageFrameURL = GenerateFrameForTime(epicycleTime: (Double(i-1) * (2.0 * .pi) / Double(imageCount)), sampleCount: sampleCount, size: size, scaleFactor: scaleFactor, trailLength: trailLength, lineWidth:lineWidth, lineColor:lineColor, backgroundColor: backgroundColor, nbrFourierSeriesTerms: nbrFourierSeriesTerms, curve: curve, userPoints: userPoints, terms: terms, showFunction: showFunction, showFourierSeries: showFourierSeries, showRadii: showRadii, showCircles: showCircles, showTerminator: showTerminator, boundingRectAllPaths: estimatedBoundingRect), let ciimage = CIImage(contentsOf: imageFrameURL) {
                         return ciimage.cgimage()
                     } 
                     return nil

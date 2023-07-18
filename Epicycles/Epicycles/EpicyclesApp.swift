@@ -15,6 +15,7 @@ struct EpicyclesApp: App {
         // 0-curvePath, 1-curveFourierSeriesPath, 2-epicyclesPath, 3-epicyclesCirclesPath, 4-epicyclesPathTerminator
     @State var lineColor = kLineColor
     @State var lineWidth = kLineWidth
+    @State var trailLength = kTrailLength
      
     init() {
         if let url = FileManager.urlForDocumentsOrSubdirectory(subdirectoryName: nil) {
@@ -28,12 +29,18 @@ struct EpicyclesApp: App {
         if let savedLineWidth = UserDefaults.standard.array(forKey: kWidthKey) as? [Double] {
             _lineWidth = State(initialValue: savedLineWidth)
         }
+        
+        if let _ = UserDefaults.standard.object(forKey: kTrailLengthKey) {
+            let savedTrailLength = UserDefaults.standard.double(forKey: kTrailLengthKey)
+            _trailLength = State(initialValue: savedTrailLength)
+        }
+        
     }
     
     var body: some Scene {
         
         WindowGroup {
-            ContentView(showSplashScreen: $showSplashScreen, lineWidth: $lineWidth, lineColor: $lineColor)
+            ContentView(showSplashScreen: $showSplashScreen, lineWidth: $lineWidth, lineColor: $lineColor, trailLength: $trailLength)
         }
         #if os(macOS)
         .defaultSize(width: 600, height: 800)
