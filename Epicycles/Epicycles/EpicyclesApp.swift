@@ -41,6 +41,7 @@ struct EpicyclesApp: App {
         
         WindowGroup {
             ContentView(showSplashScreen: $showSplashScreen, lineWidth: $lineWidth, lineColor: $lineColor, trailLength: $trailLength)
+                .preferredColorScheme(.light)
         }
         #if os(macOS)
         .defaultSize(width: 600, height: 800)
