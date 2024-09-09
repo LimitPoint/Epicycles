@@ -4,6 +4,8 @@
 
 The associated Xcode project implements an iOS and macOS [SwiftUI] app that numerically calculates the Fourier series of sampled parametric curves _(x(t), y(t))_ in the plane, points drawn by the user, or the samples of finite Fourier series created with a terms editor. 
 
+Learn more about Epicycles from our [in-depth blog post](https://www.limit-point.com/blog/2023/epicycles).
+
 Experiment with complex Fourier series of the form:
 
 <img src="https://www.limit-point.com/assets/images/Epicycles-FourierSeriesForm.png" width="223">
